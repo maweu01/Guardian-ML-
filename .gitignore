@@ -1,0 +1,72 @@
+# GUARDIAN ML — .gitignore
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ── Virtual Environment ───────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Runtime Data ──────────────────────────────────────────────
+data/uploads/
+data/processed/
+data/exports/
+
+# ── Trained Models (large binaries) ──────────────────────────
+models/saved/
+
+# ── Logs ──────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── IDE & OS ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Environment Variables ─────────────────────────────────────
+.env
+.env.local
+*.env
+
+# ── Jupyter ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Testing ───────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ── Temporary ─────────────────────────────────────────────────
+tmp/
+*.tmp
+*.bak
