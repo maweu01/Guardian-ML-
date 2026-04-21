@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GUARDIAN ML — Risk Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400&display=swap" rel="stylesheet" />
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<!-- ── Scan Lines Overlay ──────────────────────────────────── -->
+<div class="scanlines" aria-hidden="true"></div>
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<!-- ── Header ────────────────────────────────────────────────── -->
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="logo-mark">
+      <div class="logo-hex"></div>
+      <span class="logo-text">G</span>
+    </div>
+    <div class="hdr-titles">
+      <h1 class="hdr-title">GUARDIAN <span class="accent-ml">ML</span></h1>
+      <p class="hdr-sub">GEOSPATIAL UNIFIED ANOMALY RISK DETECTION & INTELLIGENCE ANALYSIS NETWORK</p>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-label" id="statusLabel">SYSTEM READY</span>
+    <div class="hdr-meta">
+      <span class="meta-item" id="clockEl">--:--:--</span>
+      <span class="meta-sep">|</span>
+      <span class="meta-item">v1.0.0</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main Layout ────────────────────────────────────────────── -->
+<main class="layout">
+
+  <!-- ── Sidebar / Pipeline Controls ── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="section-label">PIPELINE STAGE</div>
+      <nav class="pipeline-nav">
+        <button class="pipeline-step active" data-step="upload" onclick="showPanel('upload')">
+          <span class="step-num">01</span>
+          <span class="step-name">DATA INGEST</span>
+          <span class="step-status" id="st-upload">○</span>
+        </button>
+        <button class="pipeline-step" data-step="process" onclick="showPanel('process')">
+          <span class="step-num">02</span>
+          <span class="step-name">PREPROCESS</span>
+          <span class="step-status" id="st-process">○</span>
+        </button>
+        <button class="pipeline-step" data-step="train" onclick="showPanel('train')">
+          <span class="step-num">03</span>
+          <span class="step-name">TRAIN MODELS</span>
+          <span class="step-status" id="st-train">○</span>
+        </button>
+        <button class="pipeline-step" data-step="predict" onclick="showPanel('predict')">
+          <span class="step-num">04</span>
+          <span class="step-name">PREDICT</span>
+          <span class="step-status" id="st-predict">○</span>
+        </button>
+        <button class="pipeline-step" data-step="visualize" onclick="showPanel('visualize')">
+          <span class="step-num">05</span>
+          <span class="step-name">VISUALIZE</span>
+          <span class="step-status" id="st-visualize">○</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">SESSION</div>
+      <div class="session-card">
+        <div class="session-row">
+          <span class="sk">JOB ID</span>
+          <span class="sv" id="sJobId">—</span>
+        </div>
+        <div class="session-row">
+          <span class="sk">DATASET</span>
+          <span class="sv" id="sDataset">—</span>
+        </div>
+        <div class="session-row">
+          <span class="sk">FEATURES</span>
+          <span class="sv" id="sFeatures">—</span>
+        </div>
+        <div class="session-row">
+          <span class="sk">BEST MODEL</span>
+          <span class="sv" id="sBestModel">—</span>
+        </div>
+        <div class="session-row">
+          <span class="sk">HIGH RISK</span>
+          <span class="sv risk-high" id="sHighRisk">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">RISK LEGEND</div>
+      <div class="legend">
+        <div class="legend-row"><div class="legend-dot low"></div><span>LOW RISK &lt; 0.33</span></div>
+        <div class="legend-row"><div class="legend-dot med"></div><span>MEDIUM 0.33–0.66</span></div>
+        <div class="legend-row"><div class="legend-dot high"></div><span>HIGH RISK &gt; 0.66</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="btn-full btn-danger" onclick="resetSession()">⊘ RESET SESSION</button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content Area ── -->
+  <section class="content">
+
+    <!-- TOAST -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- ── Panel 01: Upload ── -->
+    <div id="panel-upload" class="panel active">
+      <div class="panel-header">
+        <h2 class="panel-title"><span class="panel-num">01</span> DATA INGEST</h2>
+        <p class="panel-desc">Upload your dataset. Supported formats: CSV, JSON, GeoJSON, XLSX.</p>
+      </div>
+
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+           ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+        <input type="file" id="fileInput" hidden accept=".csv,.json,.geojson,.xlsx"
+               onchange="handleFileSelect(event)" />
+        <div class="drop-icon">⬆</div>
+        <p class="drop-primary">DROP FILE HERE OR CLICK TO BROWSE</p>
+        <p class="drop-sub">CSV · JSON · GeoJSON · XLSX · Max 100 MB</p>
+      </div>
+
+      <div class="schema-preview hidden" id="schemaPreview">
+        <div class="preview-header">
+          <span class="prev-label">SCHEMA INSPECTION</span>
+          <span class="prev-shape" id="prevShape"></span>
+        </div>
+        <div class="info-grid" id="infoGrid"></div>
+        <div class="sample-table-wrap">
+          <div class="section-label">SAMPLE ROWS</div>
+          <div class="table-scroll" id="sampleTable"></div>
+        </div>
+        <div class="infer-row">
+          <div class="infer-item">
+            <span class="sk">INFERRED TARGET</span>
+            <span class="sv" id="inferTarget">—</span>
+          </div>
+          <div class="infer-item">
+            <span class="sk">INFERRED LAT</span>
+            <span class="sv" id="inferLat">—</span>
+          </div>
+          <div class="infer-item">
+            <span class="sk">INFERRED LON</span>
+            <span class="sv" id="inferLon">—</span>
+          </div>
+        </div>
+        <div class="warnings-block" id="uploadWarnings"></div>
+        <button class="btn-primary" onclick="proceedToProcess()">PROCEED TO PREPROCESSING →</button>
+      </div>
+    </div>
+
+    <!-- ── Panel 02: Process ── -->
+    <div id="panel-process" class="panel hidden">
+      <div class="panel-header">
+        <h2 class="panel-title"><span class="panel-num">02</span> PREPROCESSING</h2>
+        <p class="panel-desc">Configure and run the GUARDIAN preprocessing pipeline.</p>
+      </div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="cfg-label">TARGET COLUMN</label>
+          <input class="cfg-input" id="cfgTarget" placeholder="Auto-detected or enter manually" />
+        </div>
+        <div class="config-item">
+          <label class="cfg-label">SCALER</label>
+          <select class="cfg-select" id="cfgScaler">
+            <option value="standard">Standard (Z-score)</option>
+            <option value="minmax">MinMax [0,1]</option>
+            <option value="robust">Robust (IQR)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="runProcess()" id="btnProcess">
+        <span class="btn-icon">▶</span> RUN PREPROCESSING
+      </button>
+      <div id="processResult" class="result-block hidden"></div>
+    </div>
+
+    <!-- ── Panel 03: Train ── -->
+    <div id="panel-train" class="panel hidden">
+      <div class="panel-header">
+        <h2 class="panel-title"><span class="panel-num">03</span> MODEL TRAINING</h2>
+        <p class="panel-desc">Train the GUARDIAN multi-model ensemble with cross-validation.</p>
+      </div>
+      <div class="model-checkboxes">
+        <div class="section-label">SELECT MODELS</div>
+        <div class="model-grid">
+          <label class="model-check">
+            <input type="checkbox" value="random_forest" checked /> Random Forest
+          </label>
+          <label class="model-check">
+            <input type="checkbox" value="xgboost" checked /> XGBoost
+          </label>
+          <label class="model-check">
+            <input type="checkbox" value="logistic_regression" checked /> Logistic Regression
+          </label>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="runTrain()" id="btnTrain">
+        <span class="btn-icon">▶</span> BEGIN TRAINING
+      </button>
+      <div id="trainProgress" class="progress-block hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="progress-label" id="progressLabel">Initializing...</span>
+      </div>
+      <div id="trainResult" class="result-block hidden"></div>
+    </div>
+
+    <!-- ── Panel 04: Predict ── -->
+    <div id="panel-predict" class="panel hidden">
+      <div class="panel-header">
+        <h2 class="panel-title"><span class="panel-num">04</span> RISK PREDICTION</h2>
+        <p class="panel-desc">Run inference on the test set and compute composite risk scores.</p>
+      </div>
+      <div class="config-grid">
+        <div class="config-item">
+          <label class="cfg-label">MODEL SELECTION</label>
+          <select class="cfg-select" id="cfgModelSelect">
+            <option value="">Best Model (Auto)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="runPredict()" id="btnPredict">
+        <span class="btn-icon">▶</span> RUN PREDICTION
+      </button>
+      <div id="predictResult" class="result-block hidden"></div>
+      <div class="risk-dashboard hidden" id="riskDashboard">
+        <div class="risk-cards" id="riskCards"></div>
+      </div>
+    </div>
+
+    <!-- ── Panel 05: Visualize ── -->
+    <div id="panel-visualize" class="panel hidden">
+      <div class="panel-header">
+        <h2 class="panel-title"><span class="panel-num">05</span> VISUALIZATION</h2>
+        <p class="panel-desc">GUARDIAN intelligence dashboard — all analytical outputs.</p>
+      </div>
+      <div class="viz-tabs" id="vizTabs">
+        <button class="viz-tab active" onclick="switchVizTab(this,'risk-dist')">Risk Distribution</button>
+        <button class="viz-tab" onclick="switchVizTab(this,'model-cmp')">Model Comparison</button>
+        <button class="viz-tab" onclick="switchVizTab(this,'feat-imp')">Feature Importance</button>
+        <button class="viz-tab" onclick="switchVizTab(this,'conf-mat')">Confusion Matrix</button>
+        <button class="viz-tab" onclick="switchVizTab(this,'anom-tl')">Anomaly Timeline</button>
+        <button class="viz-tab" onclick="switchVizTab(this,'geo-map')">Geospatial Map</button>
+      </div>
+      <div class="viz-area">
+        <div id="chart-risk-dist" class="chart-container active-chart"></div>
+        <div id="chart-model-cmp"  class="chart-container"></div>
+        <div id="chart-feat-imp"   class="chart-container"></div>
+        <div id="chart-conf-mat"   class="chart-container"></div>
+        <div id="chart-anom-tl"    class="chart-container"></div>
+        <div id="chart-geo-map"    class="chart-container"></div>
+      </div>
+      <div class="viz-controls">
+        <button class="btn-secondary" onclick="loadAllCharts()">⟳ REFRESH ALL CHARTS</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<!-- ── Terminal Log ─────────────────────────────────────────────── -->
+<footer class="terminal">
+  <div class="terminal-header">
+    <span class="term-label">GUARDIAN TERMINAL</span>
+    <button class="term-clear" onclick="clearLog()">CLR</button>
+  </div>
+  <div class="terminal-body" id="termBody"></div>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
