@@ -1,0 +1,111 @@
+# GUARDIAN ML — System Configuration
+# =========================================================
+
+system:
+  name: "GUARDIAN ML"
+  full_name: "Geospatial Unified Anomaly Risk Detection & Intelligence Analysis Network"
+  version: "1.0.0"
+  description: "Production-grade ML pipeline for geospatial risk assessment"
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  workers: 4
+
+cors:
+  origins:
+    - "http://localhost:3000"
+    - "http://localhost:8000"
+    - "http://127.0.0.1:8000"
+
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}"
+  file: "logs/guardian.log"
+  rotation: "10 MB"
+  retention: "30 days"
+
+data:
+  upload_dir: "data/uploads"
+  processed_dir: "data/processed"
+  max_file_size_mb: 100
+  allowed_extensions:
+    - ".csv"
+    - ".json"
+    - ".geojson"
+    - ".xlsx"
+
+ml:
+  random_seed: 42
+  test_size: 0.2
+  validation_size: 0.1
+  models_dir: "models/saved"
+  
+  preprocessing:
+    imputation_strategy: "median"
+    scaling: "standard"           # standard | minmax | robust
+    outlier_method: "iqr"         # iqr | zscore | isolation_forest
+    outlier_threshold: 3.0
+  
+  feature_engineering:
+    geospatial_features: true
+    temporal_features: true
+    interaction_features: false
+    pca_components: null          # null = disabled
+
+  models:
+    random_forest:
+      enabled: true
+      n_estimators: 200
+      max_depth: 15
+      min_samples_split: 5
+      n_jobs: -1
+    
+    xgboost:
+      enabled: true
+      n_estimators: 300
+      max_depth: 6
+      learning_rate: 0.05
+      subsample: 0.8
+      colsample_bytree: 0.8
+    
+    isolation_forest:
+      enabled: true
+      contamination: 0.1
+      n_estimators: 200
+      random_state: 42
+    
+    logistic_regression:
+      enabled: true
+      max_iter: 1000
+      C: 1.0
+
+  evaluation:
+    metrics:
+      - "accuracy"
+      - "precision"
+      - "recall"
+      - "f1"
+      - "roc_auc"
+      - "confusion_matrix"
+    cross_validation_folds: 5
+
+visualization:
+  colormap: "RdYlGn_r"
+  risk_levels:
+    low:    { min: 0.0, max: 0.33, color: "#2ecc71" }
+    medium: { min: 0.33, max: 0.66, color: "#f39c12" }
+    high:   { min: 0.66, max: 1.0,  color: "#e74c3c" }
+  map:
+    default_center: [0, 20]
+    default_zoom: 4
+    tile_provider: "OpenStreetMap"
+
+export:
+  output_dir: "data/exports"
+  formats:
+    - "png"
+    - "pdf"
+    - "json"
+    - "csv"
